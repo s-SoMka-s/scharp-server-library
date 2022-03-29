@@ -10,7 +10,7 @@
 		<Company>RBAS</Company>
 		<PackageDescription>This package adds a YourProjectName</PackageDescription>
 		<RepositoryUrl>
-			https://github.com/RBAS-development/libraries-csharp-server
+			https://github.com/RBAS-development/scharp-server-library
 		</RepositoryUrl>
 	</PropertyGroup>
 	<ItemGroup>
