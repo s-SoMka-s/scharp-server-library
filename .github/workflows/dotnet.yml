@@ -48,7 +48,7 @@ jobs:
   release:
     runs-on: ubuntu-latest    
     needs: build
-    if: github.ref == 'refs/heads/main' # only run job if on the main branch   
+    if: github.ref == 'refs/heads/master' # only run job if on the master branch   
     
     steps:  
     #Push NuGet package to GitHub packages
@@ -57,17 +57,17 @@ jobs:
       with:
         name: RBAS.Libraries.Csharp.Server
     - name: Prep packages
-      run: dotnet nuget add source --username s-SoMka-s --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/s-SoMka-s/index.json"
+      run: dotnet nuget add source --username s-SoMka-s --password ${{ secrets.TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/s-SoMka-s/index.json"
     - name: Push package to GitHub packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
-      run: dotnet nuget push RBAS.Libraries.Csharp.Server/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github"
+      run: dotnet nuget push RBAS.Libraries.Csharp.Server/*.nupkg --api-key ${{ secrets.TOKEN }}  --source "github"
     
     #Create release
     - name: Create Release
       if: 1 == 0 #needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
         tag_name: ${{ needs.build.outputs.Version }}
         release_name: Release ${{ needs.build.outputs.Version }}
@@ -78,4 +78,4 @@ jobs:
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
         artifacts: "RBAS.Libraries.Csharp.Server/*"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.TOKEN }}
