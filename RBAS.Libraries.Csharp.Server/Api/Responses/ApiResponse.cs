@@ -7,28 +7,28 @@ namespace RBAS.Libraries.Csharp.Server.Api.Responses
     public class ApiResponse : Exception
     {
         [JsonPropertyName("statusCode")]
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; }
 
         [JsonPropertyName("exception")]
-        public string Exception { get; set; }
+        public string? Exception { get; }
 
         [JsonPropertyName("reason")]
-        public string Reason { get; set; }
+        public string? Reason { get; }
 
 
-        public ApiResponse(HttpStatusCode statusCode) : this(statusCode, string.Empty, string.Empty)
+        protected ApiResponse(HttpStatusCode statusCode) : this(statusCode, string.Empty, string.Empty)
         {
 
         }
 
-        public ApiResponse(HttpStatusCode statusCode, string exception, string reason)
+        public ApiResponse(HttpStatusCode statusCode, string? exception, string? reason)
         {
             StatusCode = statusCode;
             Exception = exception;
             Reason = reason;
         }
 
-        protected virtual void CollectFields(Dictionary<string, object> container)
+        protected virtual void CollectFields(Dictionary<string, object?> container)
         {
             container["statusCode"] = StatusCode;
 
@@ -44,7 +44,7 @@ namespace RBAS.Libraries.Csharp.Server.Api.Responses
 
         public override string ToString()
         {
-            var fields = new Dictionary<string, object>();
+            var fields = new Dictionary<string, object?>();
             CollectFields(fields);
 
             return JsonSerializer.Serialize(fields);
