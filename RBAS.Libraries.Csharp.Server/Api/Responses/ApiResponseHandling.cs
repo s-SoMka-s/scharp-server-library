@@ -48,9 +48,9 @@ public class ApiResponseHandling
         {
             await CompleteApiResponseAsync(context, response, defaultBody);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            var response = ResponsesFactory.InternalServerException("Internal server error");
+            var response = ResponsesFactory.InternalServerException(exception.Message);
             
             await CompleteApiResponseAsync(context, response, defaultBody);
         }
