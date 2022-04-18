@@ -50,7 +50,7 @@ public class ApiResponseHandling
         }
         catch (Exception exception)
         {
-            var response = ResponsesFactory.InternalServerException(exception.Message);
+            var response = ResponsesFactory.InternalServerException(exception.ToString());
             
             await CompleteApiResponseAsync(context, response, defaultBody);
         }
