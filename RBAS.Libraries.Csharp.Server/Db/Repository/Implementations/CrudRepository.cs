@@ -1,24 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RBAS.Libraries.Csharp.Server.Db.Repository;
 using RBAS.Libraries.Csharp.Server.Db.Repository.Interfaces;
 using RBAS.Libraries.Csharp.Server.Db.Types;
 using System.Linq.Expressions;
 
 namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 {
-    public class CrudRepository<TEntity> : ICrudRepository<TEntity> where TEntity : class, IBaseDataType
+    public class CrudRepository<TEntity, TKey> : ICrudRepository<TEntity, TKey> 
+        where TEntity : class, IBaseDataType<TKey>
+        where TKey : unmanaged, IComparable
     {
         protected DbContext Context { get; }
         protected DbSet<TEntity> Set { get; }
 
-        private readonly ICrudRepository<TEntity> self;
+        private readonly ICrudRepository<TEntity, TKey> self;
 
         public CrudRepository(DbContext context)
         {
             Context = context;
             Set = context.Set<TEntity>();
 
-            self = this as ICrudRepository<TEntity>;
+            self = this as ICrudRepository<TEntity, TKey>;
         }
 
 
@@ -30,14 +31,14 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 
         #region ICreateRepository
 
-        async Task<TEntity> ICreateRepository<TEntity>.AddAsync(TEntity entity)
+        async Task<TEntity> ICreateRepository<TEntity, TKey>.AddAsync(TEntity entity)
         {
             var result = await self.AddAsync(new[] { entity });
 
             return result.First();
         }
 
-        async Task<IEnumerable<TEntity>> ICreateRepository<TEntity>.AddAsync(IEnumerable<TEntity> entities)
+        async Task<IEnumerable<TEntity>> ICreateRepository<TEntity, TKey>.AddAsync(ICollection<TEntity> entities)
         {
             await Context.AddRangeAsync(entities);
             await Context.SaveChangesAsync();
@@ -49,15 +50,16 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 
         #region IReadRepository 
 
-        async Task<TEntity> IReadRepository<TEntity>.FindAsync(Guid id)
+        async Task<TEntity> IReadRepository<TEntity, TKey>.FindAsync(TKey id)
         {
             var query = Set as IQueryable<TEntity>;
-            var res = await query.SingleOrDefaultAsync(e => e.Id == id);
+            var array = query.ToArray();
+            var res = await query.SingleOrDefaultAsync(e => e.Id.Equals(id));
 
             return res;
         }
 
-        async Task<TEntity> IReadRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate)
+        async Task<TEntity> IReadRepository<TEntity, TKey>.FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var query = Set as IQueryable<TEntity>;
             var res = await query.SingleOrDefaultAsync(predicate);
@@ -67,7 +69,7 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 
         #endregion
 
-        IQueryable<TEntity> ICrudRepository<TEntity>.Query()
+        IQueryable<TEntity> ICrudRepository<TEntity, TKey>.Query()
         {
             var query = Set.AsNoTracking();
 
@@ -76,7 +78,7 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 
         #region IUpdateRepository
 
-        async Task<TEntity> IUpdateRepository<TEntity>.UpdateAsync(TEntity updated)
+        async Task<TEntity> IUpdateRepository<TEntity, TKey>.UpdateAsync(TEntity updated)
         {
             var entity = Set.Update(updated).Entity;
             await Context.SaveChangesAsync();
@@ -84,7 +86,7 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
             return entity;
         }
 
-        async Task<TEntity> IUpdateRepository<TEntity>.UpdateAsync(Guid id, Action<TEntity> patch)
+        async Task<TEntity> IUpdateRepository<TEntity, TKey>.UpdateAsync(TKey id, Action<TEntity> patch)
         {
             var entity = await self.FindAsync(id);
 
@@ -100,24 +102,24 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Implementations
 
         #region IDeleteRepository 
 
-        async Task<bool> IDeleteRepository<TEntity>.DeleteAsync(TEntity entity)
+        async Task<bool> IDeleteRepository<TEntity, TKey>.DeleteAsync(TEntity entity)
         {
             return await self.DeleteAsync(entity.Id);
         }
 
-        async Task<bool> IDeleteRepository<TEntity>.DeleteAsync(Guid id)
+        async Task<bool> IDeleteRepository<TEntity, TKey>.DeleteAsync(TKey id)
         {
             return await self.DeleteAsync(new[] { id });
         }
 
-        async Task<bool> IDeleteRepository<TEntity>.DeleteAsync(IEnumerable<Guid> ids)
+        async Task<bool> IDeleteRepository<TEntity, TKey>.DeleteAsync(IEnumerable<TKey> ids)
         {
             var forRemove = ids.ToArray();
 
             return await self.DeleteAsync(e => forRemove.Contains(e.Id));
         }
 
-        async Task<bool> IDeleteRepository<TEntity>.DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        async Task<bool> IDeleteRepository<TEntity, TKey>.DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var forRemove = await Set.Where(predicate).ToArrayAsync();
 

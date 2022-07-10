@@ -15,7 +15,21 @@ public class CrudFactory<TContext> : ICrudFactory where TContext : DbContext
         typesСompliance = new Dictionary<Type, Type>();
     }
 
-    public ICrudRepository<TEntity> Get<TEntity>() where TEntity : class, IBaseDataType
+    public ICrudRepository<TEntity, TKey> Get<TEntity, TKey>()
+        where TEntity : class, IBaseDataType<TKey>
+        where TKey : unmanaged, IComparable
+    {
+        var type = typeof(TEntity);
+        
+        if (typesСompliance.ContainsKey(type))
+        {
+            return provider.GetService(typesСompliance[type]) as ICrudRepository<TEntity, TKey>;
+        }
+
+        return new CrudRepository<TEntity, TKey>(DefaultContext);
+    }
+    
+    /*public ICrudRepository<TEntity> Get<TEntity>() where TEntity : class, IBaseDataType
     {
         return Get<TEntity>(DefaultContext);
     }
@@ -30,12 +44,9 @@ public class CrudFactory<TContext> : ICrudFactory where TContext : DbContext
         }
 
         return new CrudRepository<TEntity>(context);
-    }
+    }*/
 
     public DbContext Context => DefaultContext;
 
-    private TContext DefaultContext
-    {
-        get => provider.GetService(typeof(TContext)) as TContext;
-    }
+    private TContext DefaultContext => provider.GetService(typeof(TContext)) as TContext ?? throw new InvalidOperationException();
 }

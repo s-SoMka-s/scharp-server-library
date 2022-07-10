@@ -6,7 +6,7 @@ namespace RBAS.Libraries.Csharp.Server.Db.Repository.Interfaces;
 public interface ICrudFactory
 {
     DbContext Context { get; }
-
-    ICrudRepository<TEntity> Get<TEntity>() where TEntity : class, IBaseDataType;
-    ICrudRepository<TEntity> Get<TEntity>(DbContext context) where TEntity : class, IBaseDataType;
+    
+    ICrudRepository<TEntity, TKey> Get<TEntity,TKey>() where TEntity : class, IBaseDataType<TKey> where TKey : unmanaged, IComparable;
+    //ICrudRepository<TEntity> Get<TEntity>(DbContext context) where TEntity : class, IBaseDataType;
 }

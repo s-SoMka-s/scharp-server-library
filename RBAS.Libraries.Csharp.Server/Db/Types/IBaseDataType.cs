@@ -1,9 +1,11 @@
 ﻿namespace RBAS.Libraries.Csharp.Server.Db.Types
 {
-    public interface IBaseDataType
+    public interface IBaseDataType<TKey> where TKey : unmanaged
     {
-        Guid Id { get; set; }
+        TKey Id { get; set; }
 
         DateTimeOffset CreatedAt { get; set; }
+        
+        DateTimeOffset UpdatedAt { get; set; }
     }
 }

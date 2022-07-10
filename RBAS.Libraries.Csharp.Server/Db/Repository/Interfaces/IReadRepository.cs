@@ -3,8 +3,10 @@ using System.Linq.Expressions;
 
 namespace RBAS.Libraries.Csharp.Server.Db.Repository.Interfaces;
 
-public interface IReadRepository<TEntity> : IRawRepository where TEntity : class, IBaseDataType
+public interface IReadRepository<TEntity, TKey> : IRawRepository
+    where TEntity : class, IBaseDataType<TKey>
+    where TKey : unmanaged, IComparable
 {
-    Task<TEntity> FindAsync(Guid id);
+    Task<TEntity> FindAsync(TKey id);
     Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate);
 }

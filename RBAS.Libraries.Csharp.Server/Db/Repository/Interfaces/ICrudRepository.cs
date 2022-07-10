@@ -1,9 +1,10 @@
-﻿using RBAS.Libraries.Csharp.Server.Db.Repository;
-using RBAS.Libraries.Csharp.Server.Db.Types;
+﻿using RBAS.Libraries.Csharp.Server.Db.Types;
 
 namespace RBAS.Libraries.Csharp.Server.Db.Repository.Interfaces;
 
-public interface ICrudRepository<T> : ICreateRepository<T>, IReadRepository<T>, IUpdateRepository<T>, IDeleteRepository<T> where T : class, IBaseDataType
+public interface ICrudRepository<TEntity, TKey> : ICreateRepository<TEntity, TKey>, IReadRepository<TEntity, TKey>, IUpdateRepository<TEntity, TKey>, IDeleteRepository<TEntity, TKey> 
+    where TEntity : class, IBaseDataType<TKey>
+    where TKey : unmanaged, IComparable
 {
-    IQueryable<T> Query();
+    IQueryable<TEntity> Query();
 }
